@@ -1,0 +1,20 @@
+version: '3'
+
+vars:
+  # GKE specific variables. No need to set this if you're using a k3d cluster
+  NAME: hopic
+  PROJECT_ID: pht-01hp04dtnkf
+  REGION: northamerica-northeast1
+  FLEET_HOST_PROJECT_ID: php-fleet-monitoring
+
+tasks:
+  k3d:infra-up:
+    desc: Create k3d cluster and install Istio
+    cmds:
+      - k3d cluster create --config hack/k3d/config.yaml
+      - istioctl install --set profile=minimal --set meshConfig.accessLogFile=/dev/stdout
+
+  k3d:infra-down:
+    desc: Tear down the k3d cluster
+    cmds:
+      - k3d cluster delete --config hack/k3d/config.yaml
