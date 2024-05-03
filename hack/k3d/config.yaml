@@ -1,0 +1,6 @@
+# k3d cluster create --config=k3d/config.yaml
+apiVersion: k3d.io/v1alpha4
+kind: Simple
+metadata:
+  name: gitops-cluster
+image: rancher/k3s:v1.28.1-k3s1
