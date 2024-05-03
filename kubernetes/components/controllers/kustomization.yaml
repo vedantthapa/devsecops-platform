@@ -1,0 +1,69 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - cert-manager.yaml
+  - ingress.yaml
+
+patches:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: cert-manager
+      namespace: cert-manager
+    patch: |-
+      - op: add
+        # args/0 would prepend to the array, args/- appends
+        path: /spec/template/spec/containers/0/args
+        value:
+          - --v=2
+          - --cluster-resource-namespace=$(POD_NAMESPACE)
+          - --issuer-ambient-credentials=true
+          - --leader-election-namespace=cert-manager
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+            
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: cert-manager-cainjector
+      namespace: cert-manager
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args
+        value:
+          - --v=2
+          - --leader-election-namespace=cert-manager
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: cert-manager-webhook
+      namespace: cert-manager
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+
+  - target:
+      kind: "(Role|RoleBinding)"
+      name: "(cert-manager:leaderelection|cert-manager-cainjector:leaderelection)"
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: cert-manager
