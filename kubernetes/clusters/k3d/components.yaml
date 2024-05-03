@@ -10,7 +10,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infrastructure/controllers
+  path: ./kubernetes/components/controllers
   prune: true
   wait: true
   patches:
@@ -38,7 +38,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infrastructure/configs
+  path: ./kubernetes/components/configs
   prune: true
   patches:
     # configure ClusterIssuer as selfSigned issuer
