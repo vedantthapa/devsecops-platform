@@ -18,3 +18,16 @@ tasks:
     desc: Tear down the k3d cluster
     cmds:
       - k3d cluster delete --config hack/k3d/config.yaml
+
+  install-flux:
+    vars:
+      CLUSTER: k3d
+    desc: Install and configure Flux
+    cmds:
+      - |
+        flux bootstrap git \
+          --url=ssh://git@github.com/vedantthapa/k8s-devsecops \
+          --branch=main \
+          --path=kubernetes/clusters/{{.CLUSTER}} \
+          --components="source-controller,kustomize-controller,notification-controller" \
+          --components-extra="image-reflector-controller,image-automation-controller"
