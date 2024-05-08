@@ -3,7 +3,7 @@
   "extends": [
     "config:recommended",
     ":dependencyDashboard",
-    "dependencyDashboardTitle": "Renovate Dashboard 🤖",
     ":semanticCommits"
-  ]
+  ],
+  "dependencyDashboardTitle": "Renovate Dashboard 🤖",
 }
