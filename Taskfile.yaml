@@ -29,5 +29,4 @@ tasks:
           --url=ssh://git@github.com/vedantthapa/k8s-devsecops \
           --branch=main \
           --path=kubernetes/clusters/{{.CLUSTER}} \
-          --components="source-controller,kustomize-controller,notification-controller" \
           --components-extra="image-reflector-controller,image-automation-controller"
