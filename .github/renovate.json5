@@ -6,4 +6,14 @@
     ":semanticCommits"
   ],
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
+  "flux": {
+    "fileMatch": [
+      "(^|/)kubernetes/.+\\.ya?ml(?:\\.j2)?$"
+    ]
+  },
+  "kubernetes": {
+    "fileMatch": [
+      "(^|/)kubernetes/.+\\.ya?ml(?:\\.j2)?$"
+    ]
+  }
 }
