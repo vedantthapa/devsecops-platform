@@ -4,3 +4,5 @@ resources:
   - issuer.yaml
   - certificate.yaml
   - gateway.yaml
+  - deny-all-authz.yaml
+  - strict-mtls.yaml
