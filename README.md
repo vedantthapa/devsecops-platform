@@ -12,3 +12,5 @@
 [Istio Day - Lightning Talk: Use Wasm to Deploy WAF Deeper in the Service Mesh for Zero Trust and Compliance](https://www.youtube.com/watch?v=FPxAvjghJ3E)
 
 [Netpol with Istio](https://istio.io/v1.10/blog/2017/0.1-using-network-policy/)
+
+[Could network cache based identity be mistaken?](https://www.solo.io/blog/could-network-cache-based-identity-be-mistaken/)
