@@ -1,0 +1,18 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+        name: Check for large files
+      - id: end-of-file-fixer
+        name: Check for a blank line at the end of scripts (auto-fixes)
+      - id: check-yaml
+        args: [ --allow-multiple-documents ]
+        name: Check YAML
+      - id: trailing-whitespace
+        name: Check for trailing whitespaces (auto-fixes)
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        name: detect-secrets - Detect secrets in staged code
