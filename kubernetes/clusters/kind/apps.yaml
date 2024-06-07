@@ -10,6 +10,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./kubernetes/apps/k3d
+  path: ./kubernetes/apps/kind
   prune: true
   wait: true
