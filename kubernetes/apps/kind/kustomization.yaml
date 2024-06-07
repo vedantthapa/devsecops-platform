@@ -3,6 +3,8 @@ kind: Kustomization
 resources:
   - ns.yaml
   - ../base/
+  - vs.yaml
+  - allow-ingress-to-nginx.yaml
 
 namespace: apps
 

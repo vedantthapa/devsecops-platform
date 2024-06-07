@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: nginx
+spec:
+  gateways:
+  - istio-ingress/mesh-gateway
+  hosts:
+    - apps.example.com
+  http:
+  - match:
+    - uri:
+        prefix: /
+    name: nginx
+    route:
+    - destination:
+        host: nginx.apps.svc.cluster.local
+        port:
+          number: 8080
