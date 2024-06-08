@@ -37,6 +37,8 @@ kubectl port-forward -n istio-ingress svc/istio-ingressgateway 8443:443
 Run the following command to ping the gateway:
 
 ```sh
+export SECURE_INGRESS_PORT=8443
+export INGRESS_HOST=127.0.0.1
 curl -v -k -HHost:apps.example.com --resolve "apps.example.com:${SECURE_INGRESS_PORT}:$INGRESS_HOST" "https://apps.example.com:${SECURE_INGRESS_PORT}/"
 ```
 
