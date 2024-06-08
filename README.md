@@ -45,6 +45,7 @@ curl -v -k -HHost:apps.example.com --resolve "apps.example.com:${SECURE_INGRESS_
 ## Characteristics
 
 - Every kubernetes manifest in this repository is [continously reconciled](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/clusters/kind/flux-system/gotk-sync.yaml) via Flux.
+- [HTTPS certificates](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/certificate.yaml) are automatically managed via cert-manager.
 - Uses a default deny all `AuthorizationPolicy` resource to deny all L7 communications between pods. Each traffic flow must be explicitly allowed by defining an `AuthorizationPolicy` resource. See [this](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/allow-ingress-to-nginx.yaml) for example.
 - Uses mesh-wide strict mTLS using [`PeerAuthentication` resource](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/strict-mtls.yaml), therefore, every pod needs to have a certificate issued by the Istio CA to talk to another pod within the mesh. This in combination with an `AuthorizationPolicy` adds [service-to-service authentication](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/allow-ingress-to-nginx.yaml).
 - Every request passes through the ingress gateway and automatically [redirects HTTP to HTTPS](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/gateway.yaml#L16-L17).
