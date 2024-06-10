@@ -11,6 +11,8 @@ spec:
           requests:
             cpu: 50m
             memory: 112Mi
+        securityContext:
+          allowPrivilegeEscalation: false
       - name: nginx
         resources:
           requests:
