@@ -7,6 +7,35 @@ This repository builds on top of the directory structure mentioned [here](https:
 - The main directories from the reference (`./apps`, `./infrastructure` and `./clusters`) are collapsed into a top-level directory called `./kubernetes`
 - The `infrastructure` directory is renamed to `components`.
 
+### How are applications organized?
+
+```sh
+./kubernetes/apps
+├── base
+│   ├── httpbin
+│   │   ├── httpbin.yaml
+│   │   └── kustomization.yaml
+│   └── nginx
+│       ├── kustomization.yaml
+│       └── nginx.yaml
+├── gke
+└── kind
+    ├── httpbin
+    │   ├── kustomization.yaml
+    │   ├── ns.yaml
+    │   └── vs.yaml
+    └── nginx
+        ├── allow-ingress-to-nginx.yaml
+        ├── deployment-patch.yaml
+        ├── kustomization.yaml
+        ├── ns.yaml
+        └── vs.yaml
+
+8 directories, 12 files
+```
+
+Applications manifests in the `./kubernetes/apps` directory are organized as [kustomize bases and overlays](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/#bases-and-overlays). In this case, the overlays are environment specific i.e, `kind` and `gke`. The idea is to keep the application manifests platform agnostic in the `base` directory and store any environment specific resource or patch in it's own overlay directory at either `./kubernetes/apps/kind` or `./kubernetes/apps/gke`. The manifests are further segregated at a namespace-level within their respective base and overlay directories. For instance, all manifests related to the `httpbin` namespace for a kind cluster are located in the `./kubernetes/apps/base/httpbin` and `./kubernetes/apps/kind/httpbin` directories. This allows us to specify dependencies between different applications whenever it's necessary.
+
 ## Setup
 
 You'll need the following tools:
@@ -121,3 +150,7 @@ curl -v -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT
 [Netpol with Istio](https://istio.io/v1.10/blog/2017/0.1-using-network-policy/)
 
 [Could network cache based identity be mistaken?](https://www.solo.io/blog/could-network-cache-based-identity-be-mistaken/)
+
+[zta-system-patterns](https://github.com/PHACDataHub/zta-system-pattern)
+
+[node-microservices-demo](https://github.com/PHACDataHub/node-microservices-demo)
