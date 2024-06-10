@@ -8,6 +8,14 @@ spec: {}
 status: {}
 ---
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    kubernetes.io/enforce-mountable-secrets: "true" # pragma: allowlist-secret
+  name: istio-ingressgateway
+  namespace: istio-ingress
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: istio-ingressgateway
@@ -43,6 +51,7 @@ spec:
         # Set a unique label for the gateway. This is required to ensure Gateways can select this workload
         istio: ingressgateway
     spec:
+      serviceAccountName: istio-ingressgateway
       containers:
       - name: istio-proxy
         image: auto # The image will automatically update each time the pod starts.
