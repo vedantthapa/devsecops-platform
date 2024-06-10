@@ -55,7 +55,7 @@ spec:
         - op: add
           path: /spec/dnsNames
           value:
-            - apps.example.com
+            - "*.kind.com"
       target:
         kind: Certificate
         name: mesh-gateway-cert
