@@ -3,7 +3,6 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: allow-ingress-to-nginx
-  namespace: apps
 spec:
   selector:
     matchLabels:
