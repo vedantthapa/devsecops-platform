@@ -1,11 +1,16 @@
 # k8s-devsecops
 
 ## How is this repo organized?
-This repository builds on top of the directory structure mentioned [here](https://github.com/fluxcd/flux2-kustomize-helm-example/tree/main?tab=readme-ov-file#repository-structure) except that it is collapsed into a top-level directory called `./kubernetes` and the `infrastructure` directory is renamed to `components`.
+
+This repository builds on top of the directory structure mentioned [here](https://github.com/fluxcd/flux2-kustomize-helm-example/tree/main?tab=readme-ov-file#repository-structure) with some minor differences -
+
+- The main directories from the reference (`./apps`, `./infrastructure` and `./clusters`) are collapsed into a top-level directory called `./kubernetes`
+- The `infrastructure` directory is renamed to `components`.
 
 ## Setup
 
 You'll need the following tools:
+
 - [kind](https://kind.sigs.k8s.io/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 - [istioctl](https://istio.io/latest/docs/ops/diagnostic-tools/istioctl/)
@@ -28,30 +33,68 @@ task install-flux
 
 This will stand up the entire application on the previously created kind cluster.
 
-Once all pods are ready, configure a port-forward for the HTTPS endpoint of Istio gatewaywith:
+Once all pods are ready, configure a port-forward for the HTTPS and HTTP endpoint of Istio gateway with:
 
 ```sh
 kubectl port-forward -n istio-ingress svc/istio-ingressgateway 8443:443
+kubectl port-forward -n istio-ingress svc/istio-ingressgateway 8080:80
 ```
 
-Run the following command to ping the gateway:
+Run the following command to ping the HTTPS gateway:
 
 ```sh
 export SECURE_INGRESS_PORT=8443
 export INGRESS_HOST=127.0.0.1
-curl -v -k -HHost:apps.example.com --resolve "apps.example.com:${SECURE_INGRESS_PORT}:$INGRESS_HOST" "https://apps.example.com:${SECURE_INGRESS_PORT}/"
+curl -v -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT}:$INGRESS_HOST" "https://nginx.kind.com:${SECURE_INGRESS_PORT}/"
 ```
+
+To ping the HTTP gateway use:
+
+```sh
+export SECURE_INGRESS_PORT=8080
+export INGRESS_HOST=127.0.0.1
+curl -v -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT}:$INGRESS_HOST" "http://nginx.kind.com:${SECURE_INGRESS_PORT}/"
+```
+
+> Note the change in protocol and the `SECURE_INGRESS_PORT` variable
 
 ## Characteristics
 
 - Every kubernetes manifest in this repository is [continously reconciled](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/clusters/kind/flux-system/gotk-sync.yaml) via Flux.
-- [HTTPS certificates](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/certificate.yaml) are automatically managed via cert-manager.
-- Uses a default deny all `AuthorizationPolicy` resource to deny all L7 communications between pods. Each traffic flow must be explicitly allowed by defining an `AuthorizationPolicy` resource. See [this](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/allow-ingress-to-nginx.yaml) for example.
-- Uses mesh-wide strict mTLS using [`PeerAuthentication` resource](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/strict-mtls.yaml), therefore, every pod needs to have a certificate issued by the Istio CA to talk to another pod within the mesh. This in combination with an `AuthorizationPolicy` adds [service-to-service authentication](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/allow-ingress-to-nginx.yaml).
+- [TLS certificates](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/certificate.yaml) are automatically managed via cert-manager.
 - Every request passes through the ingress gateway and automatically [redirects HTTP to HTTPS](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/gateway.yaml#L16-L17).
+
+To verify this on the `kind` cluster created previously, ping the HTTP gateway. You should receive the following response:
+```sh
+> export SECURE_INGRESS_PORT=8080
+export INGRESS_HOST=127.0.0.1
+curl -v -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT}:$INGRESS_HOST" "http://nginx.kind.com:${SECURE_INGRESS_PORT}/"
+
+* Added nginx.kind.com:8080:127.0.0.1 to DNS cache
+* Hostname nginx.kind.com was found in DNS cache
+*   Trying 127.0.0.1:8080...
+* Connected to nginx.kind.com (127.0.0.1) port 8080
+> GET / HTTP/1.1
+> Host:nginx.kind.com
+> User-Agent: curl/8.8.0
+> Accept: */*
+>
+* Request completely sent off
+< HTTP/1.1 301 Moved Permanently
+< location: https://nginx.kind.com/
+< date: Mon, 10 Jun 2024 17:32:03 GMT
+< server: istio-envoy
+< content-length: 0
+<
+* Connection #0 to host nginx.kind.com left intact
+```
+- Uses a default deny all `AuthorizationPolicy` resource to deny all L7 communications between pods in the mesh. Traffic flow must be explicitly allowed by defining an `AuthorizationPolicy` resource. See [this](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/allow-ingress-to-nginx.yaml) for example.
+- Uses mesh-wide strict mTLS using [`PeerAuthentication` resource](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/strict-mtls.yaml), therefore, every pod needs to have a certificate issued by the Istio CA to talk to another pod within the mesh. This in combination with an `AuthorizationPolicy` adds [service-to-service authentication](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/allow-ingress-to-nginx.yaml).
 - A [`WasmPlugin` resource](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/waf.yaml) is used for configuring WAFs on the Istio ingress gateway. A similar resource can be defined for individual pods within the mesh.
+- Optionally, a [`RequestAuthentication` + `AuthorizationPolicy`](https://github.com/vedantthapa/istio-oauth2/blob/main/istio/authnz/ingress-jwt.yaml) can be set up to only allow requests that contain a JWT token. To take this idea a step further, [oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy) can be used to issue a cloud provider JWT token.
 
 ## Acknowledgements
+
 [Istio Best Practices](https://istio.io/latest/docs/ops/best-practices/security/)
 
 [flux2-kustomize-helm-example](https://github.com/fluxcd/flux2-kustomize-helm-example)
