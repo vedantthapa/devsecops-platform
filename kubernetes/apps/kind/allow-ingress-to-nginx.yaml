@@ -12,4 +12,5 @@ spec:
   rules:
   - from:
     - source:
-        namespaces: ["istio-ingress"]
+        # <trust-domain>/ns/<namespace>/sa/<service-account-name>
+        principals: ["cluster.local/ns/istio-ingress/sa/istio-ingressgateway"]
