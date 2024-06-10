@@ -64,34 +64,47 @@ curl -v -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT
 - [TLS certificates](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/certificate.yaml) are automatically managed via cert-manager.
 - Every request passes through the ingress gateway and automatically [redirects HTTP to HTTPS](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/gateway.yaml#L16-L17).
 
-To verify this on the `kind` cluster created previously, ping the HTTP gateway. You should receive the following response:
-```sh
-> export SECURE_INGRESS_PORT=8080
-export INGRESS_HOST=127.0.0.1
-curl -v -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT}:$INGRESS_HOST" "http://nginx.kind.com:${SECURE_INGRESS_PORT}/"
+  To verify this on the `kind` cluster created previously, ping the HTTP gateway. You should receive the following response:
 
-* Added nginx.kind.com:8080:127.0.0.1 to DNS cache
-* Hostname nginx.kind.com was found in DNS cache
-*   Trying 127.0.0.1:8080...
-* Connected to nginx.kind.com (127.0.0.1) port 8080
-> GET / HTTP/1.1
-> Host:nginx.kind.com
-> User-Agent: curl/8.8.0
-> Accept: */*
->
-* Request completely sent off
-< HTTP/1.1 301 Moved Permanently
-< location: https://nginx.kind.com/
-< date: Mon, 10 Jun 2024 17:32:03 GMT
-< server: istio-envoy
-< content-length: 0
-<
-* Connection #0 to host nginx.kind.com left intact
-```
-- Uses a default deny all `AuthorizationPolicy` resource to deny all L7 communications between pods in the mesh. Traffic flow must be explicitly allowed by defining an `AuthorizationPolicy` resource. See [this](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/allow-ingress-to-nginx.yaml) for example.
-- Uses mesh-wide strict mTLS using [`PeerAuthentication` resource](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/strict-mtls.yaml), therefore, every pod needs to have a certificate issued by the Istio CA to talk to another pod within the mesh. This in combination with an `AuthorizationPolicy` adds [service-to-service authentication](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/allow-ingress-to-nginx.yaml).
+  ```sh
+  > curl -I -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT}:$INGRESS_HOST" "http://nginx.kind.com:${SECURE_INGRESS_PORT}/"
+  HTTP/1.1 301 Moved Permanently
+  date: Mon, 10 Jun 2024 17:32:03 GMT
+  server: istio-envoy
+  transfer-encoding: chunked
+  ```
+
 - A [`WasmPlugin` resource](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/waf.yaml) is used for configuring WAFs on the Istio ingress gateway. A similar resource can be defined for individual pods within the mesh.
-- Optionally, a [`RequestAuthentication` + `AuthorizationPolicy`](https://github.com/vedantthapa/istio-oauth2/blob/main/istio/authnz/ingress-jwt.yaml) can be set up to only allow requests that contain a JWT token. To take this idea a step further, [oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy) can be used to issue a cloud provider JWT token.
+
+  To verify this on the `kind` cluster created previously, simulate an XSS attack with:
+
+  ```sh
+  > curl -I -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT}:$INGRESS_HOST" "https://nginx.kind.com:${SECURE_INGRESS_PORT}/?arg=<script>alert(0)</script>"
+  HTTP/1.1 403 Forbidden
+  date: Mon, 10 Jun 2024 17:52:04 GMT
+  server: istio-envoy
+  transfer-encoding: chunked
+  ```
+
+- Uses a default deny all `AuthorizationPolicy` resource to deny all L7 communications between pods in the mesh. Traffic flow must be explicitly allowed by defining an `AuthorizationPolicy` resource. See [this](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/nginx/allow-ingress-to-nginx.yaml) for example.
+
+  To verify this on the `kind` cluster created previously, ping the httpbin service:
+
+  ```sh
+  > curl -I -k -HHost:httpbin.kind.com --resolve "httpbin.kind.com:${SECURE_INGRESS_PORT}:$INGRESS_HOST" "https://httpbin.kind.com:${SECURE_INGRESS_PORT}/"
+  HTTP/1.1 403 Forbidden
+  content-length: 19
+  content-type: text/plain
+  date: Mon, 10 Jun 2024 17:58:04 GMT
+  server: istio-envoy
+  x-envoy-upstream-service-time: 6
+  ```
+
+  It returns a `403` because no explicit `AuthorizationPolicy` is set to allow traffic from the ingress gateway to `httpbin` service.
+
+- Uses mesh-wide strict mTLS using [`PeerAuthentication` resource](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/strict-mtls.yaml), therefore, every pod needs to have a certificate issued by the Istio CA to talk to another pod within the mesh. This in combination with an `AuthorizationPolicy` adds [service-to-service authentication](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/nginx/allow-ingress-to-nginx.yaml#L11-L15).
+
+- Optionally, a combination of `RequestAuthentication` + `AuthorizationPolicy` resource can be set up to [only allow requests that contain a JWT token](https://github.com/vedantthapa/istio-oauth2/blob/main/istio/authnz/ingress-jwt.yaml). To take this idea a step further, [oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy) can be used to obtain a JWT token from the cloud provider.
 
 ## Acknowledgements
 
