@@ -6,7 +6,7 @@ spec:
   gateways:
   - istio-ingress/mesh-gateway
   hosts:
-    - nginx-injected.kind.com
+    - nginx.kind.com
   http:
   - match:
     - uri:
@@ -14,6 +14,6 @@ spec:
     name: nginx
     route:
     - destination:
-        host: nginx.nginx-injected.svc.cluster.local
+        host: nginx.nginx.svc.cluster.local
         port:
           number: 8080
