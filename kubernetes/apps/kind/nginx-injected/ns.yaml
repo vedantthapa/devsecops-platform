@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: apps
+  name: nginx-injected
   labels:
     istio-injection: enabled
 spec: {}

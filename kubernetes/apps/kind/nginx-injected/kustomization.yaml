@@ -6,7 +6,7 @@ resources:
   - vs.yaml
   - allow-ingress-to-nginx.yaml
 
-namespace: apps
+namespace: nginx-injected
 
 patches:
   - path: ./deployment-patch.yaml
