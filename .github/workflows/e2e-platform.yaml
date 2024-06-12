@@ -1,0 +1,69 @@
+name: e2e
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ '*' ]
+    tags-ignore: [ '*' ]
+
+jobs:
+  kubernetes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Flux CLI
+        uses: fluxcd/flux2/action@main
+        # https://cloud.google.com/service-mesh/v1.20/docs/downloading-istioctl#linux
+      - name: Setup ASM istioctl
+        run: |
+          curl -LO https://storage.googleapis.com/gke-release/asm/istio-1.21.3-asm.3-linux-amd64.tar.gz
+          curl -LO https://storage.googleapis.com/gke-release/asm/istio-1.21.3-asm.3-linux-amd64.tar.gz.1.sig
+          openssl dgst -verify /dev/stdin -signature istio-1.21.3-asm.3-linux-amd64.tar.gz.1.sig istio-1.21.3-asm.3-linux-amd64.tar.gz <<'EOF'
+          -----BEGIN PUBLIC KEY-----
+          MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWZrGCUaJJr1H8a36sG4UUoXvlXvZ
+          wQfk16sxprI2gOJ2vFFggdq3ixF2h4qNBt0kI7ciDhgpwS8t+/960IsIgw==
+          -----END PUBLIC KEY-----
+          EOF
+          tar xzf istio-1.21.3-asm.3-linux-amd64.tar.gz
+          export PATH=$PWD/istio-1.21.3-asm.3/bin:$PATH
+      - name: Verify install
+        run: |
+          flux version --client
+          istioctl version --remote=false
+
+      # - name: Setup Kind
+      #   uses: helm/kind-action@v1.7.0
+      #   with:
+      #     cluster_name: e2e-platform
+      #     wait: 30s
+      # - name: Install Flux and Istio in Kind
+      #   run: |
+      #     flux install
+      #     istioctl install --set profile=minimal --set meshConfig.accessLogFile=/dev/stdout
+      # - name: Setup cluster reconciliation
+      #   run: |
+      #     flux create source git flux-system \
+      #     --url=${{ github.event.repository.html_url }} \
+      #     --branch=${GITHUB_REF#refs/heads/} \
+      #     --username=${GITHUB_ACTOR} \
+      #     --password=${{ secrets.GITHUB_TOKEN }} \
+      #     --ignore-paths="clusters/**/flux-system/"
+      #     flux create kustomization flux-system \
+      #     --source=flux-system \
+      #     --path=./clusters/staging
+      # - name: Verify cluster reconciliation
+      #   run: |
+      #     kubectl -n flux-system wait kustomization/infra-controllers --for=condition=ready --timeout=5m
+      #     kubectl -n flux-system wait kustomization/apps --for=condition=ready --timeout=5m
+      # - name: Verify helm reconciliation
+      #   run: |
+      #     kubectl -n podinfo wait helmrelease/podinfo --for=condition=ready --timeout=5m
+      # - name: Debug failure
+      #   if: failure()
+      #   run: |
+      #     kubectl -n flux-system get all
+      #     kubectl -n flux-system logs deploy/source-controller
+      #     kubectl -n flux-system logs deploy/kustomize-controller
+      #     kubectl -n flux-system logs deploy/helm-controller
+      #     flux get all --all-namespaces
