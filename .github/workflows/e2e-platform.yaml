@@ -15,7 +15,7 @@ jobs:
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@main
         # https://cloud.google.com/service-mesh/v1.20/docs/downloading-istioctl#linux
-      - name: Setup ASM istioctl
+      - name: Setup Istioctl
         run: |
           curl -LO https://storage.googleapis.com/gke-release/asm/istio-1.21.3-asm.3-linux-amd64.tar.gz
           curl -LO https://storage.googleapis.com/gke-release/asm/istio-1.21.3-asm.3-linux-amd64.tar.gz.1.sig
@@ -44,13 +44,10 @@ jobs:
           --username=${GITHUB_ACTOR} \
           --password=${{ secrets.GITHUB_TOKEN }} \
           --ignore-paths="clusters/**/flux-system/"
-          flux create kustomization flux-system \
-          --source=flux-system \
-          --path=./kubernetes/clusters/kind
+          kubectl apply -f ./kubernetes/clusters/kind/components.yaml
       - name: Verify cluster reconciliation
         run: |
           kubectl -n flux-system wait kustomization/infra-controllers --for=condition=ready --timeout=5m
-          kubectl -n flux-system wait kustomization/apps --for=condition=ready --timeout=5m
       - name: Debug failure
         if: failure()
         run: |
