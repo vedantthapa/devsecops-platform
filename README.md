@@ -42,7 +42,7 @@ You'll need the following tools:
 
 - [kind](https://kind.sigs.k8s.io/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
-- [istioctl](https://istio.io/latest/docs/ops/diagnostic-tools/istioctl/)
+- [istioctl](https://cloud.google.com/service-mesh/v1.20/docs/downloading-istioctl)
 - [Taskfile](https://taskfile.dev/)
 - [Flux CLI](https://fluxcd.io/flux/cmd/)
 
