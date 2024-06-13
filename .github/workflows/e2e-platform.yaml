@@ -3,9 +3,11 @@ name: e2e
 on:
   workflow_dispatch:
   push:
-    branches: [ '*' ]
-    tags-ignore: [ '*' ]
-
+    branches: [ 'main', 'release/**' ]
+    paths: [ 'kubernetes/components/**', 'kubernetes/clusters/**' ]
+  pull_request:
+    branches: [ 'main', 'release/**' ]
+    paths: [ 'kubernetes/components/**', 'kubernetes/clusters/**' ]
 jobs:
   e2e-platform:
     runs-on: ubuntu-latest
@@ -31,7 +33,7 @@ jobs:
         uses: helm/kind-action@v1.7.0
         with:
           cluster_name: e2e-platform
-          wait: 10s
+          wait: 5s
       - name: Install Flux and Istio in Kind
         run: |
           flux install
