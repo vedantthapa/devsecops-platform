@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+spec:
+  template:
+    spec:
+      containers:
+      - name: istio-proxy
+        image: auto
+        resources:
+          requests:
+            cpu: 50m
+            memory: 112Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+      - name: httpbin
+        resources:
+          requests:
+            cpu: 200m
+            memory: 400Mi
