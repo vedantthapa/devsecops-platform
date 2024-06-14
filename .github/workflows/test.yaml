@@ -70,4 +70,4 @@ jobs:
           done
 
           echo "INFO - Validating resources against ./policies/"
-          kyverno apply ./policies/ -r resources.yaml --table
+          kyverno apply ./policies/ -r resources.yaml --table --detailed-results
