@@ -3,6 +3,7 @@ name: test
 on:
   workflow_dispatch:
   pull_request:
+    branches: [ 'main' ]
   push:
     branches: [ '*' ]
     tags-ignore: [ '*' ]
@@ -56,7 +57,7 @@ jobs:
       - name: Check compliance
         run: |
           set -euxo pipefail
-          
+
           # mirror kustomize-controller build options
           kustomize_flags=("--load-restrictor=LoadRestrictionsNone")
           kustomize_config="kustomization.yaml"
