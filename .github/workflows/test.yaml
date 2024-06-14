@@ -3,6 +3,7 @@ name: test
 on:
   workflow_dispatch:
   pull_request:
+    branches: [ 'main' ]
   push:
     branches: [ '*' ]
     tags-ignore: [ '*' ]
@@ -15,10 +16,10 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
       - name: Setup yq
         uses: mikefarah/yq@557dcb87b8efe786f89a12c09e9046b4753ab72e # v4
-      - name: Setup kubeconform
-        uses: fluxcd/pkg/actions/kubeconform@main
       - name: Setup kustomize
         uses: fluxcd/pkg/actions/kustomize@main
+      - name: Setup kubeconform
+        uses: fluxcd/pkg/actions/kubeconform@main
       - name: Validate schemas
         run: |
           set -euxo pipefail
@@ -41,3 +42,32 @@ jobs:
                 exit 1
               fi
           done
+
+  kyverno-policies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+      - name: Setup kyverno cli
+        uses: kyverno/action-install-cli@v0.2.0
+        with:
+          release: 'v1.11.0'
+      - name: Check install
+        run: kyverno version
+      - name: Check compliance
+        run: |
+          set -euxo pipefail
+
+          # mirror kustomize-controller build options
+          kustomize_flags=("--load-restrictor=LoadRestrictionsNone")
+          kustomize_config="kustomization.yaml"
+
+          echo "INFO - Generating kustomize overlays"
+          find . -type f -name $kustomize_config -print0 | while IFS= read -r -d $'\0' file;
+            do
+              echo "INFO - Generating kustomization ${file/%$kustomize_config}"
+              kustomize build "${file/%$kustomize_config}" "${kustomize_flags[@]}" >> resources.yaml
+          done
+
+          echo "INFO - Validating resources against ./policies/"
+          kyverno apply ./policies/ -r resources.yaml --table

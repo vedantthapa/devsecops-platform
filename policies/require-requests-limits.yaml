@@ -1,7 +1,7 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: require-requests-limits
+  name: require-container-requests
   annotations:
     policies.kyverno.io/title: Require Limits and Requests
     policies.kyverno.io/category: Best Practices, EKS Best Practices
@@ -35,5 +35,3 @@ spec:
               requests:
                 memory: "?*"
                 cpu: "?*"
-              limits:
-                memory: "?*"

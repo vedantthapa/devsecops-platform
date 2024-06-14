@@ -6,3 +6,9 @@ resources:
   - vs.yaml
 
 namespace: httpbin
+
+patches:
+  - path: ./deployment-patch.yaml
+    target:
+      kind: Deployment
+      name: httpbin
