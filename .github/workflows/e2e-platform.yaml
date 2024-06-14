@@ -14,10 +14,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
-      - name: Setup Flux CLI
+      - name: Setup fluxcli
         uses: fluxcd/flux2/action@main
         # https://cloud.google.com/service-mesh/v1.20/docs/downloading-istioctl#linux
-      - name: Setup ASM istioctl
+      - name: Setup asm istioctl
         run: |
           curl -LO https://storage.googleapis.com/gke-release/asm/istio-1.21.3-asm.3-linux-amd64.tar.gz
           curl -LO https://storage.googleapis.com/gke-release/asm/istio-1.21.3-asm.3-linux-amd64.tar.gz.1.sig
@@ -29,12 +29,12 @@ jobs:
           EOF
           tar xzf istio-1.21.3-asm.3-linux-amd64.tar.gz
           echo "$PWD/istio-1.21.3-asm.3/bin" >> $GITHUB_PATH
-      - name: Setup Kind
+      - name: Setup kind
         uses: helm/kind-action@0025e74a8c7512023d06dc019c617aa3cf561fde # v1.10.0
         with:
           cluster_name: e2e-platform
           wait: 5s
-      - name: Install Flux and Istio in Kind
+      - name: Install flux and istio in kind
         run: |
           flux install
           istioctl install -y --set profile=minimal --set meshConfig.accessLogFile=/dev/stdout
