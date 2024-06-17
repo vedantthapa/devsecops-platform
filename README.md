@@ -1,5 +1,9 @@
 # k8s-devsecops
 
+> [!Warning]
+> 
+> This repository is a work in progress and changes may occur without notice.
+
 ## How is this repo organized?
 
 This repository builds on top of the directory structure mentioned [here](https://github.com/fluxcd/flux2-kustomize-helm-example/tree/main?tab=readme-ov-file#repository-structure) with some minor differences -
@@ -134,6 +138,9 @@ curl -v -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT
 - Uses mesh-wide strict mTLS using [`PeerAuthentication` resource](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/strict-mtls.yaml), therefore, every pod needs to have a certificate issued by the Istio CA to talk to another pod within the mesh. This in combination with an `AuthorizationPolicy` adds [service-to-service authentication](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/nginx/allow-ingress-to-nginx.yaml#L11-L15).
 
 - Optionally, a combination of `RequestAuthentication` + `AuthorizationPolicy` resource can be set up to [only allow requests that contain a JWT token](https://github.com/vedantthapa/istio-oauth2/blob/main/istio/authnz/ingress-jwt.yaml). To take this idea a step further, [oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy) can be used to obtain a JWT token from the cloud provider.
+
+## Known Limitations
+TODO
 
 ## Acknowledgements
 
