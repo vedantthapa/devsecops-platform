@@ -165,3 +165,7 @@ TODO
 [zta-system-patterns](https://github.com/PHACDataHub/zta-system-pattern)
 
 [node-microservices-demo](https://github.com/PHACDataHub/node-microservices-demo)
+
+[gke-policy-library](https://github.com/GoogleCloudPlatform/gke-policy-library)
+
+[gatekeeper-policies](https://github.com/StatCan/gatekeeper-policies/tree/main)
