@@ -19,7 +19,7 @@ tasks:
     cmds:
       - |
         flux bootstrap git \
-          --url=ssh://git@github.com/vedantthapa/k8s-devsecops \
+          --url=ssh://git@github.com/vedantthapa/devsecops-platform \
           --branch=main \
           --path=kubernetes/clusters/{{.CLUSTER}} \
           --components-extra="image-reflector-controller,image-automation-controller"

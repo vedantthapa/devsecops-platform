@@ -1,4 +1,4 @@
-# k8s-devsecops
+# devsecops-platform
 
 > [!Warning]
 > 
@@ -93,9 +93,9 @@ curl -v -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT
 
 ## Characteristics
 
-- Every kubernetes manifest in this repository is [continously reconciled](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/clusters/kind/flux-system/gotk-sync.yaml) via Flux.
-- [TLS certificates](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/certificate.yaml) are automatically managed via cert-manager.
-- Every request passes through the ingress gateway and automatically [redirects HTTP to HTTPS](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/gateway.yaml#L16-L17).
+- Every kubernetes manifest in this repository is [continously reconciled](https://github.com/vedantthapa/devsecops-platform/blob/main/kubernetes/clusters/kind/flux-system/gotk-sync.yaml) via Flux.
+- [TLS certificates](https://github.com/vedantthapa/devsecops-platform/blob/main/kubernetes/components/configs/certificate.yaml) are automatically managed via cert-manager.
+- Every request passes through the ingress gateway and automatically [redirects HTTP to HTTPS](https://github.com/vedantthapa/devsecops-platform/blob/main/kubernetes/components/configs/gateway.yaml#L16-L17).
 
   To verify this on the `kind` cluster created previously, ping the HTTP gateway. You should receive the following response:
 
@@ -107,7 +107,7 @@ curl -v -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT
   transfer-encoding: chunked
   ```
 
-- A [`WasmPlugin` resource](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/waf.yaml) is used for configuring WAFs on the Istio ingress gateway. A similar resource can be defined for individual pods within the mesh.
+- A [`WasmPlugin` resource](https://github.com/vedantthapa/devsecops-platform/blob/main/kubernetes/components/configs/waf.yaml) is used for configuring WAFs on the Istio ingress gateway. A similar resource can be defined for individual pods within the mesh.
 
   To verify this on the `kind` cluster created previously, simulate an XSS attack with:
 
@@ -119,7 +119,7 @@ curl -v -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT
   transfer-encoding: chunked
   ```
 
-- Uses a default deny all `AuthorizationPolicy` resource to deny all L7 communications between pods in the mesh. Traffic flow must be explicitly allowed by defining an `AuthorizationPolicy` resource. See [this](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/nginx/allow-ingress-to-nginx.yaml) for example.
+- Uses a default deny all `AuthorizationPolicy` resource to deny all L7 communications between pods in the mesh. Traffic flow must be explicitly allowed by defining an `AuthorizationPolicy` resource. See [this](https://github.com/vedantthapa/devsecops-platform/blob/main/kubernetes/apps/kind/nginx/allow-ingress-to-nginx.yaml) for example.
 
   To verify this on the `kind` cluster created previously, ping the httpbin service:
 
@@ -135,11 +135,11 @@ curl -v -k -HHost:nginx.kind.com --resolve "nginx.kind.com:${SECURE_INGRESS_PORT
 
   It returns a `403` because no explicit `AuthorizationPolicy` is set to allow traffic from the ingress gateway to `httpbin` service.
 
-- Uses mesh-wide strict mTLS using [`PeerAuthentication` resource](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/components/configs/strict-mtls.yaml), therefore, every pod needs to have a certificate issued by the Istio CA to talk to another pod within the mesh. This in combination with an `AuthorizationPolicy` adds [service-to-service authentication](https://github.com/vedantthapa/k8s-devsecops/blob/main/kubernetes/apps/kind/nginx/allow-ingress-to-nginx.yaml#L11-L15).
+- Uses mesh-wide strict mTLS using [`PeerAuthentication` resource](https://github.com/vedantthapa/devsecops-platform/blob/main/kubernetes/components/configs/strict-mtls.yaml), therefore, every pod needs to have a certificate issued by the Istio CA to talk to another pod within the mesh. This in combination with an `AuthorizationPolicy` adds [service-to-service authentication](https://github.com/vedantthapa/devsecops-platform/blob/main/kubernetes/apps/kind/nginx/allow-ingress-to-nginx.yaml#L11-L15).
 
-- Dependency updates are managed by renovate. Here's some examples - https://github.com/vedantthapa/k8s-devsecops/pull/18, https://github.com/vedantthapa/k8s-devsecops/pull/12, https://github.com/vedantthapa/k8s-devsecops/pull/15
+- Dependency updates are managed by renovate. Here's some examples - https://github.com/vedantthapa/devsecops-platform/pull/18, https://github.com/vedantthapa/devsecops-platform/pull/12, https://github.com/vedantthapa/devsecops-platform/pull/15
 
-- Resources need to pass [schema validation via kubeconform](https://github.com/vedantthapa/k8s-devsecops/blob/main/.github/workflows/test.yaml#L12-L44) and [complaince standards via kyverno CLI](https://github.com/vedantthapa/k8s-devsecops/blob/main/.github/workflows/test.yaml#L46-L73) before they're merged in.
+- Resources need to pass [schema validation via kubeconform](https://github.com/vedantthapa/devsecops-platform/blob/main/.github/workflows/test.yaml#L12-L44) and [complaince standards via kyverno CLI](https://github.com/vedantthapa/devsecops-platform/blob/main/.github/workflows/test.yaml#L46-L73) before they're merged in.
 
 - Optionally, a combination of `RequestAuthentication` + `AuthorizationPolicy` resource can be set up to [only allow requests that contain a JWT token](https://github.com/vedantthapa/istio-oauth2/blob/main/istio/authnz/ingress-jwt.yaml). To take this idea a step further, [oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy) can be used to obtain a JWT token from the cloud provider.
 
