@@ -28,7 +28,7 @@ spec:
         app: nginx
     spec:
       containers:
-      - image: cgr.dev/chainguard/nginx:latest@sha256:bf809d99103744036e922fe9b3c4c027c6019b46c9fc1bb561fb7d119760fbce
+      - image: cgr.dev/chainguard/nginx:latest@sha256:da342150f19423c9e5b1690d1911e791788a2c34bd9e73a550097a92240f78ed
         imagePullPolicy: IfNotPresent
         name: nginx
         ports:
